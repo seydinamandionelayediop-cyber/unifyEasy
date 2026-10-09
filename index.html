@@ -118,6 +118,11 @@ function iconSvg(k){
  };
  return `<span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24">${paths[k]||paths.more}</svg></span>`;
 }
+function go(section){
+  if(!nav().includes(section))return;
+  current=section;
+  render();
+}
 function renderNav(){
  const items=nav(), side=document.getElementById('side'), bottom=document.getElementById('bottom');
  side.innerHTML=items.map(k=>`<button class="${current===k?'active':''}" onclick="go('${k}')">${iconSvg(k)}<span>${label(k)}</span></button>`).join('');
