@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b0d10">
+<link rel="icon" type="image/png" sizes="64x64" href="assets/favicon.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="manifest" href="manifest.json">
+<title>Unify Easy — Administration</title>
+<style>
+:root{--bg:#f5f6f8;--card:#fff;--ink:#101318;--muted:#6f7682;--line:#e7e9ed;--dark:#111419;--green:#168a62;--red:#d94a4a;--orange:#d88916;--blue:#3367d6;--radius:18px}
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--ink)}
+button,input,textarea,select{font:inherit}button{cursor:pointer;border:0}.app{min-height:100vh}.top{height:66px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 18px;position:sticky;top:0;z-index:10}.brand{font-weight:800;font-size:20px;letter-spacing:-.5px;display:flex;align-items:center;gap:8px}.brand-logo{width:28px;height:28px;object-fit:contain;display:block}.brand span{color:var(--blue)}.role{font-size:12px;background:#f0f2f5;padding:8px 11px;border-radius:99px;color:#4d5561}.layout{display:flex;max-width:1400px;margin:auto}.side{display:none}.main{width:100%;padding:18px 16px 88px}.view{display:none}.view.active{display:block}.head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:18px}.head h1{font-size:26px;margin:0;letter-spacing:-.8px}.head p{margin:5px 0 0;color:var(--muted);font-size:13px}.btn{padding:11px 14px;border-radius:12px;font-weight:700;background:var(--dark);color:#fff}.btn.secondary{background:#eef0f3;color:#1d232b}.btn.blue{background:var(--blue)}.grid{display:grid;gap:14px}.stats{grid-template-columns:repeat(2,1fr);margin-bottom:16px}.stat{background:#fff;border:1px solid var(--line);border-radius:16px;padding:15px}.stat b{font-size:25px}.stat small{display:block;color:var(--muted);margin-top:3px}.calendar{background:#fff;border:1px solid var(--line);border-radius:18px;overflow:hidden}.cal-head{padding:15px 16px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}.week{display:grid;grid-template-columns:repeat(7,1fr);min-width:700px}.calendar-wrap{overflow:auto}.day{min-height:170px;border-right:1px solid var(--line)}.day:last-child{border-right:0}.daytitle{padding:9px 8px;border-bottom:1px solid var(--line);font-size:11px;color:var(--muted);text-align:center}.daytitle strong{display:block;color:var(--ink);font-size:15px}.event{margin:7px;padding:9px;border-radius:11px;background:#eef3ff;border-left:3px solid var(--blue);font-size:11px}.event strong{display:block;font-size:12px;margin-bottom:4px}.event span{color:#586273}.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px}.section-title{font-size:16px;font-weight:800;margin:0 0 12px}.event-list{display:grid;gap:10px}.event-row{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:13px;border:1px solid var(--line);border-radius:14px}.event-row h3{margin:0;font-size:14px}.event-row p{margin:4px 0 0;color:var(--muted);font-size:12px}.badge{display:inline-flex;align-items:center;border-radius:99px;padding:5px 8px;font-size:10px;font-weight:800}.b-green{background:#e5f7ef;color:#11734f}.b-red{background:#fde9e9;color:#a82f2f}.b-orange{background:#fff1dc;color:#a96b09}.b-blue{background:#e8efff;color:#315dc4}.table{width:100%;border-collapse:collapse}.table th,.table td{text-align:left;padding:11px 8px;border-bottom:1px solid var(--line);font-size:12px}.table th{color:var(--muted);font-size:10px;text-transform:uppercase}.actions{display:flex;gap:7px;flex-wrap:wrap}.iconbtn{padding:8px 10px;border-radius:10px;background:#f0f2f5}.bottom{position:fixed;bottom:0;left:0;right:0;height:68px;background:rgba(255,255,255,.96);backdrop-filter:blur(14px);border-top:1px solid var(--line);display:flex;justify-content:space-around;z-index:20}.bottom button{background:none;color:#747b86;font-size:10px;padding:7px 8px}.bottom button.active{color:var(--blue);font-weight:800}.bottom i{display:block;font-style:normal;font-size:19px;margin-bottom:2px}.modal{position:fixed;inset:0;background:rgba(0,0,0,.42);display:none;align-items:flex-end;justify-content:center;z-index:50}.modal.show{display:flex}.sheet{background:#fff;width:100%;max-width:720px;border-radius:24px 24px 0 0;max-height:92vh;overflow:auto;padding:20px}.sheet h2{margin:0 0 16px}.form{display:grid;gap:12px}.field label{font-size:11px;font-weight:800;color:#555e69;display:block;margin-bottom:6px}.field input,.field textarea,.field select{width:100%;border:1px solid #dfe2e7;border-radius:12px;padding:12px;outline:none;background:#fff}.field textarea{min-height:90px;resize:vertical}.modal-actions{display:flex;gap:9px;margin-top:16px}.modal-actions button{flex:1}.login{position:fixed;inset:0;background:linear-gradient(145deg,#101318,#202833);display:flex;align-items:center;justify-content:center;padding:20px;z-index:100}.loginbox{background:#fff;border-radius:26px;padding:26px;max-width:420px;width:100%}.loginbox h1{margin:0;font-size:30px}.loginbox p{color:var(--muted);font-size:13px;line-height:1.5}.rolecards{display:grid;gap:10px;margin:20px 0}.rolecard{border:1px solid var(--line);padding:15px;border-radius:15px;text-align:left;background:#fff}.rolecard strong{display:block}.rolecard small{color:var(--muted)}.feedback{max-width:620px;margin:30px auto;padding:18px}.feedback .hero{background:#111419;color:#fff;border-radius:22px;padding:22px}.stars{display:flex;gap:7px;font-size:30px;margin:12px 0}.stars button{background:none;color:#c7cbd1;font-size:30px;padding:0}.stars button.on{color:#f2b01e}.question-stars{margin:7px 0 0}.question-stars button{font-size:28px}.notice{padding:12px;border-radius:12px;background:#f3f5f8;color:#505864;font-size:12px;margin:12px 0}.menu-box{background:#f6f7f9;border:1px solid var(--line);padding:13px;border-radius:14px;font-size:13px;line-height:1.6;white-space:pre-wrap}.empty{padding:30px;text-align:center;color:var(--muted)}.order-line input{min-width:0}.order-line .iconbtn{padding:9px}@media(min-width:850px){.side{display:block;width:220px;background:#fff;border-right:1px solid var(--line);min-height:calc(100vh - 66px);padding:18px;position:sticky;top:66px}.side button{width:100%;text-align:left;padding:12px;border-radius:12px;background:none;margin-bottom:5px;color:#68717d}.side button.active{background:#edf2ff;color:#315dc4;font-weight:800}.main{padding:26px}.bottom{display:none}.stats{grid-template-columns:repeat(4,1fr)}.modal{align-items:center}.sheet{border-radius:24px}.feedback{padding:30px}}
+
+.nav-icon{width:19px;height:19px;display:inline-flex;align-items:center;justify-content:center;flex:0 0 19px;color:currentColor}
+.nav-icon svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.side button,.bottom button{display:flex;align-items:center;gap:12px}
+.side button{border-radius:13px;transition:background .18s ease,color .18s ease}
+.side button.active{background:#eaf0ff;color:#155eef}
+.btn,.iconbtn,.rolecard{transition:transform .16s ease,box-shadow .16s ease}
+.btn:hover,.iconbtn:hover,.rolecard:hover{transform:translateY(-1px)}
+.card,.stat,.calendar{box-shadow:0 6px 24px rgba(15,23,42,.035)}
+input,select,textarea{border-radius:13px!important}
+.modal .sheet{box-shadow:0 24px 80px rgba(15,23,42,.22)}
+</style>
+</head>
+<body>
+<div id="login" class="login">
+  <div class="loginbox">
+    <div class="brand"><img class="brand-logo" src="assets/unify-easy-logo.png" alt="Unify Easy"><span>Unify <span>Easy</span></span></div>
+    <h1>Connexion administrateur</h1>
+    <p>Connectez-vous pour accéder à votre espace Unify Easy. Les données sont enregistrées dans votre projet Supabase.</p>
+    <form id="authForm" onsubmit="handleAuth(event)">
+      <div class="field"><label for="authEmail">Adresse e-mail</label><input id="authEmail" type="email" autocomplete="email" required placeholder="admin@exemple.com"></div>
+      <div class="field" style="margin-top:12px"><label for="authPassword">Mot de passe</label><input id="authPassword" type="password" autocomplete="current-password" minlength="8" required placeholder="8 caractères minimum"></div>
+      <button id="loginBtn" class="btn blue" style="width:100%;margin-top:16px" type="submit">Se connecter</button>
+      <button class="btn secondary" style="width:100%;margin-top:9px" type="button" onclick="handleSignUp()">Créer le premier compte</button>
+      <p id="authMessage" role="status" style="font-size:12px;margin-top:12px"></p>
+    </form>
+    <p style="font-size:11px;color:var(--muted);text-align:center;margin-top:12px">Configurez d’abord l’URL et la clé publique Supabase dans <code>supabase-config.js</code>.</p>
+  </div>
+</div>
+
+<div id="app" class="app" style="display:none">
+<header class="top"><div class="brand"><img class="brand-logo" src="assets/unify-easy-logo.png" alt="Unify Easy"><span>Unify <span>Easy</span></span></div><div style="display:flex;align-items:center;gap:10px"><div id="roleLabel" class="role"></div><button class="iconbtn" onclick="logout()" title="Se déconnecter">Déconnexion</button></div></header>
+<div class="layout">
+<aside class="side" id="side"></aside>
+<main class="main">
+<section id="dashboard" class="view"></section>
+<section id="events" class="view"></section>
+<section id="team" class="view"></section>
+<section id="reviews" class="view"></section>
+<section id="more" class="view"></section>
+<section id="client" class="view"></section>
+</main>
+</div>
+<nav class="bottom" id="bottom"></nav>
+</div>
+
+<div id="modal" class="modal"><div class="sheet" id="sheet"></div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script>
+const KEY='unify_easy_prototype_v3';
+const seed={
+ role:'admin',
+ responsible:[
+  {id:'R-01',name:'Aminata Fall',phone:'+221 77 100 20 30',events:2},
+  {id:'R-02',name:'Moussa Ndiaye',phone:'+221 76 200 40 50',events:1}
+ ],
+ team:[
+  {id:'T-01',name:'Fatou Sarr',job:'Service',phone:'+221 77 111 22 33'},
+  {id:'T-02',name:'Ibrahima Diallo',job:'Cuisine',phone:'+221 76 222 33 44'},
+  {id:'T-03',name:'Marième Ba',job:'Accueil',phone:'+221 78 333 44 55'},
+  {id:'T-04',name:'Cheikh Sy',job:'Service',phone:'+221 70 444 55 66'}
+ ],
+ events:[
+  {id:'EVT-001',name:'Ministère de l’Intérieur — Cocktail officiel',date:'2026-10-10',time:'18:00',place:'Dakar',guests:120,responsible:'Aminata Fall',menuName:'Menu Prestige — Ministère de l’Intérieur',menu:'Entrée : verrines de crevettes\\nPlat : suprême de poulet, légumes et riz parfumé\\nDessert : assortiment de mini-pâtisseries\\nBoissons : jus naturels, eau et softs',team:['T-01','T-02','T-03'],presence:{'T-01':'present','T-02':'present','T-03':'pending'},reviews:[{rating:5,menuRating:5,serviceRating:5,organisationRating:5,recommendation:'yes',comment:'Service très professionnel et menu excellent.',date:'2026-10-10'},{rating:4,menuRating:4,serviceRating:4,organisationRating:5,recommendation:'yes',comment:'Très bonne organisation.',date:'2026-10-10'}]},
+  {id:'EVT-002',name:'Dîner Entreprises & Partenaires',date:'2026-10-11',time:'20:00',place:'Almadies',guests:80,responsible:'Moussa Ndiaye',menuName:'Menu Signature — Entreprises',menu:'Entrée : salade fraîcheur\\nPlat : filet de bœuf sauce poivre\\nDessert : fondant chocolat\\nBoissons : eau, jus et café',team:['T-01','T-04'],presence:{'T-01':'present','T-04':'absent'},reviews:[{rating:5,menuRating:5,serviceRating:5,organisationRating:5,recommendation:'yes',comment:'Très belle expérience.',date:'2026-10-11'}]},
+  {id:'EVT-003',name:'Mariage Ndiaye',date:'2026-10-08',time:'16:00',place:'Ngor',guests:250,responsible:'Aminata Fall',menuName:'Menu Mariage — Royal',menu:'Entrée : salade composée\\nPlat : poulet rôti et accompagnements\\nDessert : pièce montée et fruits\\nBoissons : jus locaux et eau',team:['T-02','T-03','T-04'],presence:{'T-02':'pending','T-03':'present','T-04':'pending'},reviews:[]}
+ ],
+ feedbackEvent:'EVT-001'
+};
+function emptyState(){return {role:'admin',responsible:[],team:[],events:[],feedbackEvent:null}}
+let state=emptyState();
+let current='dashboard';
+let currentUser=null;
+let saveTimer=null;
+const supabaseReady=!!(window.supabase && window.UNIFY_SUPABASE_URL && window.UNIFY_SUPABASE_ANON_KEY && !window.UNIFY_SUPABASE_URL.includes('VOTRE_'));
+const sb=supabaseReady?window.supabase.createClient(window.UNIFY_SUPABASE_URL,window.UNIFY_SUPABASE_ANON_KEY):null;
+function normalizeState(data){const s={...emptyState(),...(data||{})};s.role='admin';s.responsible=s.responsible||[];s.team=s.team||[];s.events=s.events||[];s.events.forEach(e=>{if(!e.billingStatus)e.billingStatus='to_invoice';if(e.amount==null)e.amount=0;if(!e.serverIds)e.serverIds=e.team||[];if(!e.server)e.server=(e.team||[]).map(id=>s.team.find(t=>t.id===id)?.name).filter(Boolean).join(', ');if(!e.reviews)e.reviews=[];if(!e.presence)e.presence={};});return s}
+function messageAuth(msg,error=false){const el=document.getElementById('authMessage');if(el){el.textContent=msg;el.style.color=error?'#b42318':'#168a62'}}
+async function handleAuth(ev){ev.preventDefault();if(!sb){messageAuth('Supabase n’est pas configuré. Complétez supabase-config.js puis rechargez la page.',true);return}const email=document.getElementById('authEmail').value.trim();const password=document.getElementById('authPassword').value;const btn=document.getElementById('loginBtn');btn.disabled=true;btn.textContent='Connexion…';try{const {data,error}=await sb.auth.signInWithPassword({email,password});if(error)throw error;await openSession(data.user)}catch(e){messageAuth(e.message||'Connexion impossible.',true)}finally{btn.disabled=false;btn.textContent='Se connecter'}}
+async function handleSignUp(){if(!sb){messageAuth('Supabase n’est pas configuré. Complétez supabase-config.js puis rechargez la page.',true);return}const email=document.getElementById('authEmail').value.trim();const password=document.getElementById('authPassword').value;if(!email||password.length<8){messageAuth('Saisissez un e-mail et un mot de passe de 8 caractères minimum.',true);return}try{const {data,error}=await sb.auth.signUp({email,password});if(error)throw error;if(data.session){await openSession(data.user)}else{messageAuth('Compte créé. Vérifiez votre e-mail, puis connectez-vous.')}}catch(e){messageAuth(e.message||'Création du compte impossible.',true)}}
+async function openSession(user){currentUser=user;messageAuth('');try{const {data,error}=await sb.from('app_state').select('payload').eq('user_id',user.id).maybeSingle();if(error)throw error;state=normalizeState(data?.payload||emptyState());if(!data)await persistState();}catch(e){currentUser=null;await sb.auth.signOut();messageAuth('Impossible de charger les données. Vérifiez que le SQL fourni a été exécuté dans Supabase. '+(e.message||''),true);return}document.getElementById('login').style.display='none';document.getElementById('app').style.display='block';render()}
+async function persistState(){if(!sb||!currentUser)return;const {error}=await sb.from('app_state').upsert({user_id:currentUser.id,payload:state,updated_at:new Date().toISOString()},{onConflict:'user_id'});if(error){console.error('Supabase save:',error);messageAuth('Erreur de sauvegarde Supabase : '+error.message,true)}}
+function save(){state.role='admin';localStorage.setItem(KEY,JSON.stringify(state));if(saveTimer)clearTimeout(saveTimer);saveTimer=setTimeout(()=>persistState().catch(console.error),450)}
+async function logout(){if(sb)await sb.auth.signOut();currentUser=null;state=emptyState();document.getElementById('app').style.display='none';document.getElementById('login').style.display='flex';messageAuth('Vous êtes déconnecté.')}
+async function boot(){if(location.hash.startsWith('#feedback=')){current='client';state=normalizeState(emptyState());document.getElementById('login').style.display='none';document.getElementById('app').style.display='block';render();return}if(!sb){messageAuth('Configuration requise : renseignez supabase-config.js et exécutez supabase/schema.sql.',true);return}const {data:{session}}=await sb.auth.getSession();if(session?.user)await openSession(session.user)}
+function roleName(){return state.role==='admin'?'Administrateur':state.role==='responsable'?'Responsable':'Client'}
+function billingLabel(s){return s==='paid'?'Payé':s==='invoiced'?'Facturé':'À facturer'}
+function billingClass(s){return s==='paid'?'b-green':s==='invoiced'?'b-blue':'b-orange'}
+function setBilling(id,status){const e=state.events.find(x=>x.id===id);if(!e)return;e.billingStatus=status;save();closeModal();render()}
+function fmtDate(d){return new Date(d+'T12:00:00').toLocaleDateString('fr-FR',{day:'2-digit',month:'short'})}
+function visibleEvents(){return state.role==='responsable'?state.events.filter(e=>e.responsible===state.responsible[0].name):state.events}
+function nav(){return ['dashboard','events','team','reviews','more']}
+function label(k){return {dashboard:'Tableau de bord',events:'Événements',team:'Équipe & Responsables',reviews:'Avis clients',more:'Paramètres'}[k]}
+function iconSvg(k){
+ const paths={
+  dashboard:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+  events:'<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M16 3v4M8 3v4M3 10h18"/>',
+  team:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',
+  reviews:'<path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3z"/>',
+  more:'<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>',
+  client:'<circle cx="12" cy="12" r="9"/>'
+ };
+ return `<span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24">${paths[k]||paths.more}</svg></span>`;
+}
+function renderNav(){
+ const items=nav(), side=document.getElementById('side'), bottom=document.getElementById('bottom');
+ side.innerHTML=items.map(k=>`<button class="${current===k?'active':''}" onclick="go('${k}')">${iconSvg(k)}<span>${label(k)}</span></button>`).join('');
+ bottom.innerHTML=items.map(k=>`<button class="${current===k?'active':''}" onclick="go('${k}')">${iconSvg(k)}<span>${label(k)}</span></button>`).join('');
+}
+function render(){document.getElementById('roleLabel').textContent=roleName();['dashboard','events','team','reviews','more','client'].forEach(x=>document.getElementById(x).classList.toggle('active',current===x));if(state.role==='client')clientPage();else{dashboard();eventsPage();teamPage();reviewsPage();morePage()}renderNav()}
+function dashboard(){
+  const es=visibleEvents();
+  if(state.role==='responsable'){
+    const mine=es.slice().sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+    document.getElementById('dashboard').innerHTML=`<div class="head"><div><h1>Mon programme 👋</h1><p>Événements qui vous sont attribués.</p></div></div><div class="grid stats"><div class="stat"><b>${mine.length}</b><small>Événements</small></div><div class="stat"><b>${mine.reduce((n,e)=>n+(e.team||[]).length,0)}</b><small>Membres mobilisés</small></div><div class="stat"><b>${mine.filter(e=>e.billingStatus==='paid').length}</b><small>Payés</small></div><div class="stat"><b>${mine.reduce((n,e)=>n+e.reviews.length,0)}</b><small>Avis</small></div></div><div class="card"><h2 class="section-title">Programme</h2><div class="event-list">${mine.length?mine.map(e=>`<div class="event-row"><div><h3>${e.object||e.name}</h3><p>${e.date||'—'} · ${e.place||'—'}<br>Client : ${e.client||'—'}<br>Serveurs : ${e.server||'—'}</p></div><button class="iconbtn" onclick="openEventDetail('${e.id}')">Voir</button></div>`).join(''):'<div class="empty">Aucun événement attribué.</div>'}</div></div>`;
+    return;
+  }
+  const days=[5,6,7,8,9,10,11];
+  let html=`<div class="head"><div><h1>Bonjour 👋</h1><p>Vue globale des opérations de la semaine.</p></div>${state.role==='admin'?'<button class="btn" onclick="openEvent()">+ Événement</button>':''}</div>`;
+  const toInvoice=es.filter(e=>(e.billingStatus||'to_invoice')==='to_invoice').length,invoiced=es.filter(e=>e.billingStatus==='invoiced').length,paid=es.filter(e=>e.billingStatus==='paid').length;
+  html+=`<div class="grid stats"><div class="stat"><b>${es.length}</b><small>Événements</small></div><div class="stat"><b>${toInvoice}</b><small>À facturer</small></div><div class="stat"><b>${invoiced}</b><small>Facturés</small></div><div class="stat"><b>${paid}</b><small>Payés</small></div></div>`;
+  html+=`<div class="calendar"><div class="cal-head"><div><b>Semaine du 5 au 11 octobre 2026</b><div style="font-size:11px;color:var(--muted)">Planning des événements</div></div><span class="badge b-blue">${es.length} événements</span></div><div class="calendar-wrap"><div class="week">`;
+  days.forEach(d=>{let date=`2026-10-${String(d).padStart(2,'0')}`,ds=es.filter(e=>e.date===date);html+=`<div class="day"><div class="daytitle">${['LUN','MAR','MER','JEU','VEN','SAM','DIM'][d-5]}<strong>${d}</strong></div>${ds.map(e=>`<div class="event" onclick="openEventDetail('${e.id}')"><strong>${e.time||''} · ${e.object||e.name}</strong><span>${e.place}</span><br><span>${e.menu||e.menuName}</span></div>`).join('')}</div>`});
+  html+=`</div></div></div><div class="card" style="margin-top:14px"><h2 class="section-title">Prochains événements</h2><div class="event-list">${es.slice().sort((a,b)=>a.date.localeCompare(b.date)).slice(0,4).map(e=>rowEvent(e)).join('')}</div></div>`;
+  document.getElementById('dashboard').innerHTML=html;
+}
+function rowEvent(e){return `<div class="event-row"><div><h3>${e.object||e.name}</h3><p>${e.client||'Client non renseigné'} · ${e.place||'Lieu non renseigné'}<br>N° : ${e.order||'—'} · Serveurs : ${e.server||'—'}</p><span class="badge ${billingClass(e.billingStatus||'to_invoice')}" style="margin-top:6px">${billingLabel(e.billingStatus||'to_invoice')}</span></div><div class="actions"><button class="iconbtn" onclick="openEventDetail('${e.id}')">Voir</button></div></div>`}
+function eventsPage(){
+ const es=visibleEvents();
+ document.getElementById('events').innerHTML=`<div class="head"><div><h1>Événements</h1><p>Créer, suivre et retrouver les prestations enregistrées.</p></div>${state.role==='admin'?'<button class="btn" onclick="openEvent()">+ Créer</button>':''}</div>
+ <div class="card" style="margin-bottom:14px">
+   <h2 class="section-title">Rechercher et filtrer</h2>
+   <div class="form" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px">
+     <div class="field"><label>Recherche</label><input id="eventSearch" type="search" placeholder="N°, client, objet, lieu, serveur..." oninput="filterEvents()"></div>
+     <div class="field"><label>Du</label><input id="eventDateFrom" type="date" onchange="filterEvents()"></div>
+     <div class="field"><label>Au</label><input id="eventDateTo" type="date" onchange="filterEvents()"></div>
+     <div class="field"><label>Statut de facturation</label><select id="eventBilling" onchange="filterEvents()"><option value="">Tous les statuts</option><option value="to_invoice">À facturer</option><option value="invoiced">Facturé</option><option value="paid">Payé</option></select></div>
+   </div>
+   <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:8px">
+     <small id="eventResultsCount" style="color:var(--muted)">${es.length} événement(s)</small>
+     <button class="btn secondary" type="button" onclick="resetEventFilters()">Réinitialiser les filtres</button>
+   </div>
+ </div>
+ <div id="filteredEventList" class="event-list">${es.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||'')).map(rowEvent).join('')||'<div class="empty">Aucun événement enregistré.</div>'}</div>`;
+}
+function filterEvents(){
+ const all=visibleEvents();
+ const q=(document.getElementById('eventSearch')?.value||'').trim().toLocaleLowerCase('fr');
+ const from=document.getElementById('eventDateFrom')?.value||'';
+ const to=document.getElementById('eventDateTo')?.value||'';
+ const billing=document.getElementById('eventBilling')?.value||'';
+ const filtered=all.filter(e=>{
+   const searchable=[e.id,e.order,e.client,e.object,e.name,e.place,e.contact,e.server,e.menu,e.menuName,e.observation,e.menuNumber]
+     .filter(Boolean).join(' ').toLocaleLowerCase('fr');
+   const status=e.billingStatus||'to_invoice';
+   return (!q||searchable.includes(q))&&(!from||e.date>=from)&&(!to||e.date<=to)&&(!billing||status===billing);
+ }).slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+ const list=document.getElementById('filteredEventList');
+ if(list)list.innerHTML=filtered.map(rowEvent).join('')||'<div class="empty">Aucun événement ne correspond à ces filtres.</div>';
+ const count=document.getElementById('eventResultsCount');
+ if(count)count.textContent=`${filtered.length} événement(s) trouvé(s) sur ${all.length}`;
+}
+function resetEventFilters(){
+ ['eventSearch','eventDateFrom','eventDateTo','eventBilling'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});
+ filterEvents();
+}
+let teamCategoryFilter='all';
+function teamPage(){
+ const canEdit=state.role==='admin';
+ const people=[
+  ...state.responsible.map(r=>({id:r.id,name:r.name,phone:r.phone,type:'Responsable',job:'Responsable',status:r.status||'Actif',category:r.category||'internal'})),
+  ...state.team.map(t=>({id:t.id,name:t.name,phone:t.phone,type:/service|serveur/i.test(t.job)?'Serveur':'Équipe',job:t.job,status:t.status||'Actif',category:t.category||'internal'}))
+ ].filter(p=>teamCategoryFilter==='all'||p.category===teamCategoryFilter);
+ const all=[...state.responsible,...state.team];
+ const internal=all.filter(p=>(p.category||'internal')==='internal').length;
+ const external=all.filter(p=>p.category==='external').length;
+ document.getElementById('team').innerHTML=`<div class="head"><div><h1>Équipe & Responsables</h1><p>Une gestion claire du personnel interne et des prestataires externes.</p></div>${canEdit?'<button class="btn" onclick="openPerson()">＋ Ajouter un utilisateur</button>':''}</div>
+ <div class="grid stats" style="margin-bottom:16px"><div class="stat"><b>${internal}</b><small>Personnel interne</small></div><div class="stat"><b>${external}</b><small>Personnel externe</small></div></div>
+ <div class="card" style="margin-bottom:14px"><div style="display:flex;gap:8px;flex-wrap:wrap">
+ <button class="btn ${teamCategoryFilter==='all'?'blue':'secondary'}" onclick="filterTeamCategory('all')">Tous (${all.length})</button>
+ <button class="btn ${teamCategoryFilter==='internal'?'blue':'secondary'}" onclick="filterTeamCategory('internal')">⌂ Interne (${internal})</button>
+ <button class="btn ${teamCategoryFilter==='external'?'blue':'secondary'}" onclick="filterTeamCategory('external')">▦ Externe (${external})</button>
+ </div></div>
+ <div class="card" style="overflow-x:auto"><table class="table"><thead><tr><th>Nom</th><th>Fonction</th><th>Rôle</th><th>Rattachement</th><th>Téléphone</th><th>Statut</th></tr></thead><tbody>${people.map(p=>`<tr><td><b>${p.name}</b></td><td>${p.job||'—'}</td><td><span class="badge ${p.type==='Responsable'?'b-blue':'b-green'}">${p.type}</span></td><td><span class="badge ${p.category==='external'?'b-orange':'b-blue'}">${p.category==='external'?'Externe':'Interne'}</span></td><td>${p.phone||'—'}</td><td><span class="badge ${p.status==='Actif'?'b-green':'b-red'}">${p.status}</span></td></tr>`).join('')||'<tr><td colspan="6"><div class="empty">Aucun utilisateur dans cette catégorie.</div></td></tr>'}</tbody></table></div>`;
+}
+function filterTeamCategory(category){teamCategoryFilter=category;teamPage()}
+function openPerson(){
+  openModal(`<h2>Ajouter un utilisateur</h2><div class="form">
+  <div class="field"><label>Nom complet</label><input id="p_name" placeholder="Ex. Aminata Fall"></div>
+  <div class="field"><label>Téléphone</label><input id="p_phone" type="tel" placeholder="+221 77 000 00 00"></div>
+  <div class="field"><label>Email</label><input id="p_email" type="email" placeholder="nom@email.com"></div>
+  <div class="field"><label>Rattachement</label><select id="p_category"><option value="internal">Interne</option><option value="external">Externe</option></select></div>
+  <div class="field"><label>Rôle</label><select id="p_role"><option value="responsable">Responsable</option><option value="serveur">Serveur</option><option value="equipe">Équipe</option></select></div>
+  <div class="field"><label>Fonction</label><input id="p_job" placeholder="Ex. Responsable opérationnel"></div>
+  <div class="field"><label>Mot de passe temporaire</label><input id="p_password" type="password"></div>
+  <div class="field"><label>Statut</label><select id="p_status"><option>Actif</option><option>Inactif</option></select></div>
+  </div><div class="modal-actions"><button class="btn secondary" onclick="closeModal()">Annuler</button><button class="btn" onclick="createPerson()">Créer l'utilisateur</button></div>`)
+}
+function createPerson(){
+  const role=v('p_role'),category=v('p_category')||'internal',name=v('p_name'),phone=v('p_phone'),job=v('p_job')||role,status=v('p_status')||'Actif';
+  if(!name||!phone){alert('Le nom et le téléphone sont obligatoires.');return}
+  if(role==='responsable')state.responsible.push({id:'R-'+Date.now(),name,phone,events:0,email:v('p_email'),status,category});
+  else state.team.push({id:'T-'+Date.now(),name,job,phone,email:v('p_email'),status,category});
+  save();closeModal();go('team')
+}
+function reviewsPage(){
+  const es=visibleEvents(),reviews=es.flatMap(e=>e.reviews.map(r=>({...r,event:e.name})));
+  const avg=(key)=>{const vals=reviews.map(r=>Number(r[key])).filter(Boolean);return vals.length?(vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1):'—'};
+  const recYes=reviews.filter(r=>r.recommendation==='yes').length;
+  const recRate=reviews.length?Math.round(recYes/reviews.length*100):0;
+
+  document.getElementById('reviews').innerHTML=`<div class="head"><div><h1>Avis clients</h1><p>Analyse des 4 critères de satisfaction.</p></div></div>
+  <div class="grid stats">
+    <div class="stat"><b>${avg('menuRating')}</b><small>Qualité du menu / 5</small></div>
+    <div class="stat"><b>${avg('serviceRating')}</b><small>Qualité du service / 5</small></div>
+    <div class="stat"><b>${avg('organisationRating')}</b><small>Organisation / 5</small></div>
+    <div class="stat"><b>${recRate}%</b><small>Recommandation</small></div>
+  </div>
+  <div class="event-list">${reviews.length?reviews.slice().reverse().map(r=>`<div class="card">
+    <div style="display:flex;justify-content:space-between;gap:10px"><b>${r.event}</b><span style="font-size:11px;color:var(--muted)">${fmtDate(r.date)}</span></div>
+    <div style="display:grid;gap:5px;margin-top:10px;font-size:12px">
+      <span>🍽️ Menu : ${r.menuRating||'—'}/5</span>
+      <span>👨‍🍳 Service : ${r.serviceRating||'—'}/5</span>
+      <span>📋 Organisation : ${r.organisationRating||'—'}/5</span>
+      <span>👍 Recommandation : ${r.recommendation==='yes'?'Oui':r.recommendation==='maybe'?'Peut-être':r.recommendation==='no'?'Non':'—'}</span>
+    </div>
+    <p style="margin:10px 0 5px">${r.comment}</p>
+  </div>`).join(''):'<div class="card empty">Aucun avis pour le moment.</div>'}</div>`;
+}
+
+function morePage(){
+ let extra=state.role==='admin'?`<div class="card"><h2 class="section-title">Responsables</h2><div class="event-list">${state.responsible.map(r=>`<div class="event-row"><div><h3>${r.name}</h3><p>${r.phone} · ${r.events} événement(s)</p></div><span class="badge b-green">Actif</span></div>`).join('')}</div><button class="btn" style="margin-top:12px" onclick="openResponsible()">+ Créer un responsable</button></div>`:'';
+ document.getElementById('more').innerHTML=`<div class="head"><div><h1>Plus</h1><p>Outils et paramètres du prototype.</p></div></div>${extra}<div class="card" style="margin-top:14px"><h2 class="section-title">Test du parcours Client</h2><p style="color:var(--muted);font-size:13px">Le QR d’un événement ouvre exactement son formulaire de satisfaction et son menu.</p><button class="btn blue" onclick="clientPreview('EVT-001')">Tester le QR du Ministère</button><button class="btn secondary" style="margin-left:7px" onclick="resetDemo()">Réinitialiser la démo</button></div>`;
+}
+function openModal(content){document.getElementById('sheet').innerHTML=content;document.getElementById('modal').classList.add('show')}
+function closeModal(){document.getElementById('modal').classList.remove('show')}
+function openEvent(){
+  const html=`<h2>Créer un événement</h2>
+  <div class="form">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="field"><label>N° événement / commande</label><input id="e_order" placeholder="Ex. 001"></div>
+      <div class="field"><label>Date</label><input id="e_date" type="date" value="${new Date().toISOString().slice(0,10)}"></div>
+    </div>
+
+    <div class="field"><label>Client</label><input id="e_client" placeholder="Nom du client"></div>
+    <div class="field"><label>Objet</label><input id="e_object" placeholder="Ex. Réunion d’entreprise"></div>
+
+    <div class="field">
+      <label>Commande</label>
+      <div id="orderLines" style="display:grid;gap:8px"></div>
+      <button type="button" class="btn secondary" style="margin-top:8px;width:100%" onclick="addOrderLine()">+ Ajouter une ligne</button>
+    </div>
+
+    <div class="field"><label>Lieu</label><input id="e_place" placeholder="Lieu de la prestation"></div>
+    <div class="field"><label>Contact</label><input id="e_contact" type="tel" placeholder="+221 77 000 00 00"></div>
+    <div class="field"><label>Observation</label><textarea id="e_observation" placeholder="Consignes et informations particulières..."></textarea></div>
+    <div class="field"><label>Menu</label><input id="e_menu" placeholder="Menu prévu"></div>
+
+    <div class="field">
+      <label>Serveurs</label>
+      <div style="display:grid;gap:8px;border:1px solid #dfe2e7;border-radius:12px;padding:11px">
+        ${state.team.map(t=>`<label style="display:flex;gap:9px;align-items:center;font-weight:500">
+          <input class="servercheck" type="checkbox" value="${t.id}">
+          <span><b>${t.name}</b><small style="display:block;color:var(--muted)">${t.job} · ${t.phone}</small></span>
+        </label>`).join('')}
+      </div>
+    </div>
+
+    <div class="field"><label>Menu N°</label><input id="e_menuNo" placeholder="Ex. MENU-001"></div>
+
+    <div class="field">
+      <label>Facturation</label>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <label style="display:flex;gap:7px;align-items:center;font-weight:500"><input type="radio" name="billing" value="to_invoice" checked> À facturer</label>
+        <label style="display:flex;gap:7px;align-items:center;font-weight:500"><input type="radio" name="billing" value="invoiced"> Facturé</label>
+        <label style="display:flex;gap:7px;align-items:center;font-weight:500"><input type="radio" name="billing" value="paid"> Payé</label>
+      </div>
+    </div>
+
+    <div class="field"><label>Montant total (FCFA)</label><input id="e_amount" type="number" min="0" value="0"></div>
+  </div>
+
+  <div class="modal-actions">
+    <button class="btn secondary" onclick="closeModal()">Annuler</button>
+    <button class="btn" onclick="createEvent()">Enregistrer</button>
+  </div>`;
+
+  openModal(html);
+  addOrderLine();
+}
+
+function addOrderLine(){
+  const box=document.getElementById('orderLines');
+  if(!box)return;
+  const row=document.createElement('div');
+  row.className='order-line';
+  row.style.cssText='display:grid;grid-template-columns:1fr 90px 110px 38px;gap:7px;align-items:center';
+  row.innerHTML=`<input class="order-desc" placeholder="Désignation">
+    <input class="order-qty" type="number" min="1" value="1" placeholder="Qté">
+    <input class="order-price" type="number" min="0" value="0" placeholder="Montant">
+    <button type="button" class="iconbtn" onclick="this.parentElement.remove()">×</button>`;
+  box.appendChild(row);
+}
+function createEvent(){
+  const team=[...document.querySelectorAll('.servercheck:checked')].map(x=>x.value);
+  const items=[...document.querySelectorAll('.order-line')].map(row=>({
+    description:row.querySelector('.order-desc')?.value.trim()||'',
+    quantity:Number(row.querySelector('.order-qty')?.value||1),
+    amount:Number(row.querySelector('.order-price')?.value||0)
+  })).filter(x=>x.description);
+
+  const billing=document.querySelector('input[name="billing"]:checked')?.value||'to_invoice';
+  const e={
+    id:'EVT-'+String(Date.now()).slice(-5),
+    client:v('e_client'),
+    object:v('e_object'),
+    order:v('e_order'),
+    orderItems:items,
+    place:v('e_place'),
+    contact:v('e_contact'),
+    observation:v('e_observation'),
+    menu:v('e_menu'),
+    menuName:v('e_menu'),
+    menuNo:v('e_menuNo'),
+    serverIds:team,
+    server:team.map(id=>state.team.find(t=>t.id===id)?.name).filter(Boolean).join(', '),
+    name:v('e_object'),
+    date:v('e_date'),
+    time:'',
+    guests:0,
+    responsible:state.responsible[0]?.name||'',
+    team,
+    presence:Object.fromEntries(team.map(id=>[id,'pending'])),
+    reviews:[],
+    billingStatus:billing,
+    amount:Number(v('e_amount')||0)
+  };
+
+  if(!e.client||!e.object||!e.order||!e.place||!e.contact||!e.menu){
+    alert('Veuillez remplir Client, Objet, Commande, Lieu, Contact et Menu.');
+    return;
+  }
+  if(!items.length){
+    alert('Ajoutez au moins une ligne dans la commande.');
+    return;
+  }
+  if(!team.length){
+    alert('Sélectionnez au moins un serveur.');
+    return;
+  }
+  state.events.push(e);
+  save();
+  closeModal();
+  go('events');
+}
+
+function openTeam(){openModal(`<h2>Créer un membre</h2><div class="form"><div class="field"><label>Nom</label><input id="t_name"></div><div class="field"><label>Fonction</label><input id="t_job" placeholder="Service, cuisine, accueil..."></div><div class="field"><label>Téléphone</label><input id="t_phone"></div></div><div class="modal-actions"><button class="btn secondary" onclick="closeModal()">Annuler</button><button class="btn" onclick="createTeam()">Créer</button></div>`)}
+function createTeam(){let t={id:'T-'+Date.now(),name:v('t_name'),job:v('t_job'),phone:v('t_phone')};if(!t.name)return;state.team.push(t);save();closeModal();go('team')}
+function openResponsible(){openModal(`<h2>Créer un responsable</h2><div class="form"><div class="field"><label>Nom complet</label><input id="r_name"></div><div class="field"><label>Téléphone</label><input id="r_phone"></div></div><div class="modal-actions"><button class="btn secondary" onclick="closeModal()">Annuler</button><button class="btn" onclick="createResponsible()">Créer</button></div>`)}
+function createResponsible(){let r={id:'R-'+Date.now(),name:v('r_name'),phone:v('r_phone'),events:0};if(!r.name)return;state.responsible.push(r);save();closeModal();go('more')}
+function openEventDetail(id){
+  const e=state.events.find(x=>x.id===id);if(!e)return;
+  const items=e.orderItems||[];
+  const team=(e.team||[]).map(tid=>{
+    const t=state.team.find(x=>x.id===tid);
+    return t?`<div class="event-row"><div><b>${t.name}</b><p>${t.job} · ${t.phone}</p></div><span class="badge ${e.presence[tid]==='present'?'b-green':e.presence[tid]==='absent'?'b-red':'b-orange'}">${e.presence[tid]||'En attente'}</span></div>`:'';
+  }).join('');
+
+  const orderHtml=items.length?`<table class="table"><thead><tr><th>Désignation</th><th>Qté</th><th>Montant</th></tr></thead><tbody>${items.map(i=>`<tr><td>${i.description}</td><td>${i.quantity}</td><td>${Number(i.amount).toLocaleString('fr-FR')} F</td></tr>`).join('')}</tbody></table>`:'<div class="empty">Aucune ligne de commande.</div>';
+
+  openModal(`<h2>${e.object||e.name}</h2>
+  <div class="notice"><b>N° :</b> ${e.order||'—'} &nbsp; <b>Date :</b> ${e.date||'—'}<br>
+  <b>Client :</b> ${e.client||'—'}<br><b>Lieu :</b> ${e.place||'—'}<br><b>Contact :</b> ${e.contact||'—'}</div>
+
+  <h3>Commande</h3><div class="card">${orderHtml}</div>
+  <h3>Observation</h3><div class="notice">${e.observation||'Aucune observation.'}</div>
+  <h3>Menu</h3><div class="menu-box"><b>${e.menuNo||''}</b>${e.menu?`<br>${e.menu}`:''}</div>
+  <h3>Serveurs</h3><div class="event-list">${team||'<div class="empty">Aucun serveur affecté.</div>'}</div>
+
+  <h3>Facturation</h3>
+  <div class="card">
+    <p><b>Montant total :</b> ${Number(e.amount||0).toLocaleString('fr-FR')} FCFA</p>
+    <span class="badge ${billingClass(e.billingStatus||'to_invoice')}">${billingLabel(e.billingStatus||'to_invoice')}</span>
+    <div class="actions" style="margin-top:12px">
+      <button class="iconbtn" onclick="setBilling('${e.id}','to_invoice')">À facturer</button>
+      <button class="iconbtn" onclick="setBilling('${e.id}','invoiced')">Marquer facturé</button>
+      <button class="iconbtn" onclick="setBilling('${e.id}','paid')">Marquer payé</button>
+    </div>
+  </div>
+
+  <div class="modal-actions"><button class="btn blue" onclick="showQR('${e.id}')">Générer QR</button><button class="btn secondary" onclick="closeModal()">Fermer</button></div>`);
+}
+
+function setPresence(eid,tid,status){let e=state.events.find(x=>x.id===eid);e.presence[tid]=status;save();openEventDetail(eid);dashboard();teamPage()}
+function presenceMember(tid){let es=visibleEvents().filter(e=>e.team.includes(tid));if(!es.length){alert('Ce membre n’est affecté à aucun de vos événements.');return}openEventDetail(es[0].id)}
+function showQR(id){
+ const e=state.events.find(x=>x.id===id), url=location.href.split('#')[0]+'#feedback='+id;
+ openModal(`<h2>QR — ${e.name}</h2><p style="color:var(--muted)">Le client scanne ce QR pour voir le menu exact de cet événement et laisser son avis.</p><div style="display:flex;justify-content:center;margin:18px"><img alt="QR code" width="230" height="230" src="https://api.qrserver.com/v1/create-qr-code/?size=230x230&data=${encodeURIComponent(url)}"></div><div class="notice">${url}</div><div class="modal-actions"><button class="btn secondary" onclick="closeModal()">Fermer</button><button class="btn" onclick="clientPreview('${id}')">Tester le parcours client</button></div>`)
+}
+function clientPreview(id){closeModal();state.feedbackEvent=id;state.role='client';save();current='client';render()}
+function clientPage(){
+  const hash=location.hash.match(/feedback=([^&]+)/),id=hash?hash[1]:(state.feedbackEvent||'EVT-001'),e=state.events.find(x=>x.id===id)||state.events[0];
+  document.getElementById('client').innerHTML=`<div class="feedback">
+    <div class="hero"><div class="brand"><img class="brand-logo" src="assets/unify-easy-logo.png" alt="Unify Easy"><span>Unify <span style="color:#9db8ff">Easy</span></span></div><h1 style="margin:18px 0 5px">${e.object||e.name}</h1><p style="opacity:.72;margin:0">${fmtDate(e.date)} · ${e.place||''}</p></div>
+
+    <div class="card" style="margin-top:14px">
+      <h2 class="section-title">Votre satisfaction</h2>
+      <p style="font-size:13px;color:var(--muted)">Votre avis nous aide à améliorer nos prochaines prestations.</p>
+
+      <div class="field" style="margin-top:18px">
+        <label>1. Comment évaluez-vous la qualité du menu proposé ?</label>
+        <div class="stars question-stars" data-question="menu">${[1,2,3,4,5].map(n=>`<button type="button" onclick="rateQuestion('menu',${n})" id="menuStar${n}">★</button>`).join('')}</div>
+      </div>
+
+      <div class="field" style="margin-top:20px">
+        <label>2. Comment évaluez-vous la qualité du service des serveurs ?</label>
+        <div class="stars question-stars" data-question="service">${[1,2,3,4,5].map(n=>`<button type="button" onclick="rateQuestion('service',${n})" id="serviceStar${n}">★</button>`).join('')}</div>
+      </div>
+
+      <div class="field" style="margin-top:20px">
+        <label>3. Comment évaluez-vous l’organisation générale de la prestation ?</label>
+        <div class="stars question-stars" data-question="organisation">${[1,2,3,4,5].map(n=>`<button type="button" onclick="rateQuestion('organisation',${n})" id="organisationStar${n}">★</button>`).join('')}</div>
+      </div>
+
+      <div class="field" style="margin-top:20px">
+        <label>4. Recommanderiez-vous nos services ?</label>
+        <div style="display:grid;gap:8px;margin-top:8px">
+          <label style="display:flex;gap:9px;align-items:center;padding:11px;border:1px solid var(--line);border-radius:12px">
+            <input type="radio" name="recommend" value="yes"> 👍 Oui, certainement
+          </label>
+          <label style="display:flex;gap:9px;align-items:center;padding:11px;border:1px solid var(--line);border-radius:12px">
+            <input type="radio" name="recommend" value="maybe"> 🤔 Peut-être
+          </label>
+          <label style="display:flex;gap:9px;align-items:center;padding:11px;border:1px solid var(--line);border-radius:12px">
+            <input type="radio" name="recommend" value="no"> 👎 Non
+          </label>
+        </div>
+      </div>
+
+      <div class="field" style="margin-top:20px">
+        <label>Commentaire ou suggestion</label>
+        <textarea id="clientComment" placeholder="Partagez votre expérience..."></textarea>
+      </div>
+
+      <button class="btn blue" style="width:100%;margin-top:14px" onclick="submitReview('${e.id}')">Envoyer mon avis</button>
+    </div>
+  </div>`;
+}
+
+let questionRatings={menu:0,service:0,organisation:0};
+
+function rateQuestion(question,n){
+  questionRatings[question]=n;
+  for(let i=1;i<=5;i++){
+    const el=document.getElementById(question+'Star'+i);
+    if(el)el.classList.toggle('on',i<=n);
+  }
+}
+
+function submitReview(id){
+  const recommend=document.querySelector('input[name="recommend"]:checked')?.value||'';
+  if(!questionRatings.menu||!questionRatings.service||!questionRatings.organisation||!recommend){
+    alert('Veuillez répondre aux 4 questions avant d’envoyer votre avis.');
+    return;
+  }
+
+  const e=state.events.find(x=>x.id===id);
+  e.reviews.push({
+    menuRating:questionRatings.menu,
+    serviceRating:questionRatings.service,
+    organisationRating:questionRatings.organisation,
+    recommendation:recommend,
+    rating:Math.round((questionRatings.menu+questionRatings.service+questionRatings.organisation)/3),
+    comment:document.getElementById('clientComment').value||'Avis sans commentaire',
+    date:e.date
+  });
+  save();
+  alert('Merci pour votre avis !');
+  questionRatings={menu:0,service:0,organisation:0};
+  location.hash='';
+  current='client';
+  render();
+}
+
+function v(id){return document.getElementById(id)?.value.trim()}
+function resetDemo(){alert('La réinitialisation des données doit être effectuée depuis Supabase après export de sauvegarde.');}
+window.addEventListener('hashchange',()=>{if(location.hash.startsWith('#feedback=')){current='client';document.getElementById('login').style.display='none';document.getElementById('app').style.display='block';render()}});
+boot();
+</script>
+</body>
+</html>
