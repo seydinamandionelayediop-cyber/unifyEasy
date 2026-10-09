@@ -140,7 +140,7 @@ function renderNav(){
  side.innerHTML=items.map(k=>`<button class="${current===k?'active':''}" onclick="go('${k}')">${iconSvg(k)}<span>${label(k)}</span></button>`).join('');
  bottom.innerHTML=items.map(k=>`<button class="${current===k?'active':''}" onclick="go('${k}')">${iconSvg(k)}<span>${label(k)}</span></button>`).join('');
 }
-function render(){document.getElementById('roleLabel').textContent=roleName();['dashboard','events','team','reviews','more','client'].forEach(x=>document.getElementById(x).classList.toggle('active',current===x));if(state.role==='client')clientPage();else{dashboard();eventsPage();teamPage();reviewsPage();morePage()}renderNav()}
+function render(){document.getElementById('roleLabel').textContent=current==='client'?'Avis client':roleName();['dashboard','events','team','reviews','more','client'].forEach(x=>document.getElementById(x).classList.toggle('active',current===x));if(current==='client'){clientPage();return}dashboard();eventsPage();teamPage();reviewsPage();morePage();renderNav()}
 function dashboard(){
   const es=visibleEvents();
   if(state.role==='responsable'){
@@ -334,42 +334,42 @@ function addOrderLine(){
     <button type="button" class="iconbtn" onclick="this.parentElement.remove()">×</button>`;
   box.appendChild(row);
 }
-function createEvent(){
+async function createEvent(){
+  const btn=[...document.querySelectorAll('#sheet .modal-actions button')].find(b=>b.textContent.trim()==='Enregistrer');
+  if(btn){btn.disabled=true;btn.textContent='Enregistrement…'}
   try {
     const team=[...document.querySelectorAll('.servercheck:checked')].map(x=>x.value);
     const items=[...document.querySelectorAll('.order-line')].map(row=>({
       description:row.querySelector('.order-desc')?.value.trim()||'',
-      quantity:Number(row.querySelector('.order-qty')?.value||1),
-      amount:Number(row.querySelector('.order-price')?.value||0)
+      quantity:Math.max(1,Number(row.querySelector('.order-qty')?.value||1)),
+      amount:Math.max(0,Number(row.querySelector('.order-price')?.value||0))
     })).filter(x=>x.description);
     const billing=document.querySelector('input[name="billing"]:checked')?.value||'to_invoice';
     const e={
-      id:'EVT-'+String(Date.now()).slice(-5),
-      client:v('e_client'), object:v('e_object'), order:v('e_order'), orderItems:items,
+      id:'EVT-'+Date.now(), client:v('e_client'), object:v('e_object'), order:v('e_order'), orderItems:items,
       place:v('e_place'), contact:v('e_contact'), observation:v('e_observation'),
-      menu:v('e_menu'), menuName:v('e_menu'), menuNo:v('e_menuNo'),
-      serverIds:team,
+      menu:v('e_menu'), menuName:v('e_menu'), menuNo:v('e_menuNo'), serverIds:team,
       server:team.map(id=>state.team.find(t=>t.id===id)?.name).filter(Boolean).join(', '),
-      name:v('e_object'), date:v('e_date'), time:'', guests:0,
-      responsible:state.responsible[0]?.name||'', team,
-      presence:Object.fromEntries(team.map(id=>[id,'pending'])), reviews:[],
-      billingStatus:billing, amount:Number(v('e_amount')||0)
+      name:v('e_object'), date:v('e_date'), time:'', guests:0, responsible:state.responsible[0]?.name||'', team,
+      presence:Object.fromEntries(team.map(id=>[id,'pending'])), reviews:[], billingStatus:billing, amount:Number(v('e_amount')||0)
     };
-    if(!e.client||!e.object||!e.order||!e.place||!e.contact||!e.menu){
-      alert('Champs obligatoires : Client, Objet, N° commande, Lieu, Contact et Menu.'); return;
-    }
-    if(!items.length){alert('Ajoute au moins une ligne de commande et renseigne sa désignation.');return;}
+    const missing=[];
+    if(!e.client)missing.push('Client');
+    if(!e.object)missing.push('Objet');
+    if(!e.place)missing.push('Lieu');
+    if(!e.menu)missing.push('Menu');
+    if(!e.date)missing.push('Date');
+    if(!items.length)missing.push('au moins une désignation dans la commande');
+    if(missing.length){alert('Complète ces champs avant l’enregistrement : '+missing.join(', ')+'.');return;}
     state.events.push(e);
-    localStorage.setItem(KEY,JSON.stringify(state));
-    closeModal();
-    current='events';
-    render();
-    save();
-    alert('Événement enregistré dans la liste. La synchronisation Supabase est lancée.');
-  } catch(err) {
-    console.error('createEvent error:',err);
-    alert('Impossible de créer l’événement : '+(err.message||err)+'. Ouvre la console JavaScript pour les détails.');
-  }
+    try{localStorage.setItem(KEY,JSON.stringify(state));}catch(storageError){console.warn('Stockage local indisponible',storageError)}
+    closeModal();current='events';render();
+    if(!sb||!currentUser){alert('Événement ajouté à la liste de cette session, mais Supabase n’est pas connecté : reconnecte-toi avant de fermer la page.');return;}
+    const {error}=await sb.from('app_state').upsert({user_id:currentUser.id,payload:state,updated_at:new Date().toISOString()},{onConflict:'user_id'});
+    if(error){console.error('Erreur enregistrement événement:',error);alert('L’événement est visible dans cette session, mais Supabase a refusé la sauvegarde : '+error.message);return;}
+    alert('Événement enregistré et synchronisé avec Supabase.');
+  }catch(err){console.error('createEvent error:',err);alert('Impossible de créer l’événement : '+(err?.message||String(err)));}
+  finally{if(btn){btn.disabled=false;btn.textContent='Enregistrer'}}
 }
 
 function openTeam(){openModal(`<h2>Créer un membre</h2><div class="form"><div class="field"><label>Nom</label><input id="t_name"></div><div class="field"><label>Fonction</label><input id="t_job" placeholder="Service, cuisine, accueil..."></div><div class="field"><label>Téléphone</label><input id="t_phone"></div></div><div class="modal-actions"><button class="btn secondary" onclick="closeModal()">Annuler</button><button class="btn" onclick="createTeam()">Créer</button></div>`)}
@@ -415,9 +415,9 @@ function showQR(id){
  const e=state.events.find(x=>x.id===id); if(!e)return; const publicData={id:e.id,object:e.object||e.name||'Événement',name:e.name||e.object||'Événement',date:e.date||'',place:e.place||'',menu:e.menu||e.menuName||''}; const payload=encodeURIComponent(JSON.stringify(publicData)); const url=location.href.split('#')[0]+'#feedback='+encodeURIComponent(id)+'&event='+payload;
  openModal(`<h2>QR — ${e.name||e.object}</h2><p style="color:var(--muted)">Le client scanne ce QR pour voir le menu exact de cet événement et laisser son avis.</p><div style="display:flex;justify-content:center;margin:18px"><img alt="QR code" width="230" height="230" src="https://api.qrserver.com/v1/create-qr-code/?size=230x230&data=${encodeURIComponent(url)}"></div><div class="notice">${url}</div><div class="modal-actions"><button class="btn secondary" onclick="closeModal()">Fermer</button><button class="btn" onclick="clientPreview('${id}')">Tester le parcours client</button></div>`)
 }
-function clientPreview(id){closeModal();state.feedbackEvent=id;state.role='client';save();current='client';render()}
+function clientPreview(id){closeModal();state.feedbackEvent=id;current='client';render()}
 function clientPage(){
-  const hash=location.hash.match(/feedback=([^&]+)/),id=hash?decodeURIComponent(hash[1]):(state.feedbackEvent||'EVT-001');let e=state.events.find(x=>x.id===id)||state.events[0];const em=location.hash.match(/(?:^|&)event=([^&]+)/);if(!e&&em){try{e=JSON.parse(decodeURIComponent(em[1]))}catch(_){}}if(!e)e={id,object:'Votre événement',name:'Votre événement',date:'',place:'',menu:'Menu non renseigné',reviews:[]};
+  const hash=location.hash.match(/feedback=([^&]+)/),id=hash?decodeURIComponent(hash[1]):(state.feedbackEvent||'EVT-001');let e=state.events.find(x=>x.id===id)||null;const em=location.hash.match(/(?:^|&)event=([^&]+)/);if(em){try{e=JSON.parse(decodeURIComponent(em[1]))}catch(_){}}if(!e)e=state.events[0]||null;if(!e)e={id,object:'Votre événement',name:'Votre événement',date:'',place:'',menu:'Menu non renseigné',reviews:[]};
   document.getElementById('client').innerHTML=`<div class="feedback">
     <div class="hero"><div class="brand"><img class="brand-logo" src="assets/unify-easy-logo.png" alt="Unify Easy"><span>Unify <span style="color:#9db8ff">Easy</span></span></div><h1 style="margin:18px 0 5px">${e.object||e.name}</h1><p style="opacity:.72;margin:0">${fmtDate(e.date)} · ${e.place||''}</p></div>
 
