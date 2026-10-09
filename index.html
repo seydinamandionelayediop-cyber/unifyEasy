@@ -94,7 +94,8 @@ function normalizeState(data){const s={...emptyState(),...(data||{})};s.role='ad
 function messageAuth(msg,error=false){const el=document.getElementById('authMessage');if(el){el.textContent=msg;el.style.color=error?'#b42318':'#168a62'}}
 async function handleAuth(ev){ev.preventDefault();if(!sb){messageAuth('Supabase n’est pas configuré. Complétez supabase-config.js puis rechargez la page.',true);return}const email=document.getElementById('authEmail').value.trim();const password=document.getElementById('authPassword').value;const btn=document.getElementById('loginBtn');btn.disabled=true;btn.textContent='Connexion…';try{const {data,error}=await sb.auth.signInWithPassword({email,password});if(error)throw error;await openSession(data.user)}catch(e){messageAuth(e.message||'Connexion impossible.',true)}finally{btn.disabled=false;btn.textContent='Se connecter'}}
 async function handleSignUp(){if(!sb){messageAuth('Supabase n’est pas configuré. Complétez supabase-config.js puis rechargez la page.',true);return}const email=document.getElementById('authEmail').value.trim();const password=document.getElementById('authPassword').value;if(!email||password.length<8){messageAuth('Saisissez un e-mail et un mot de passe de 8 caractères minimum.',true);return}try{const {data,error}=await sb.auth.signUp({email,password});if(error)throw error;if(data.session){await openSession(data.user)}else{messageAuth('Compte créé. Vérifiez votre e-mail, puis connectez-vous.')}}catch(e){messageAuth(e.message||'Création du compte impossible.',true)}}
-async function openSession(user){currentUser=user;messageAuth('');try{const {data,error}=await sb.from('app_state').select('payload').eq('user_id',user.id).maybeSingle();if(error)throw error;state=normalizeState(data?.payload||emptyState());if(!data)await persistState();}catch(e){currentUser=null;await sb.auth.signOut();messageAuth('Impossible de charger les données. Vérifiez que le SQL fourni a été exécuté dans Supabase. '+(e.message||''),true);return}document.getElementById('login').style.display='none';document.getElementById('app').style.display='block';render()}
+async function openSession(user){currentUser=user;messageAuth('');try{const {data,error}=await sb.from('app_state').select('payload').eq('user_id',user.id).maybeSingle();if(error)throw error;state=normalizeState(data?.payload||emptyState());if(!data)await persistState();await loadPublicReviews();}catch(e){currentUser=null;await sb.auth.signOut();messageAuth('Impossible de charger les données. Vérifiez le schéma SQL Supabase. '+(e.message||''),true);return}document.getElementById('login').style.display='none';document.getElementById('app').style.display='block';render()}
+async function loadPublicReviews(){if(!sb||!currentUser)return;const {data,error}=await sb.from('public_feedback').select('*').order('created_at',{ascending:true});if(error){console.warn('Avis publics non chargés:',error.message);return}for(const r of (data||[])){const e=state.events.find(x=>x.id===r.event_id);if(!e)continue;e.reviews=e.reviews||[];if(!e.reviews.some(x=>x.publicFeedbackId===r.id)){e.reviews.push({publicFeedbackId:r.id,event:e.object||e.name,menuRating:r.menu_rating,serviceRating:r.service_rating,organisationRating:r.organisation_rating,recommendation:r.recommendation,comment:r.comment||'Avis sans commentaire',date:(r.created_at||'').slice(0,10)||e.date})}}}
 async function persistState(){if(!sb||!currentUser)return;const {error}=await sb.from('app_state').upsert({user_id:currentUser.id,payload:state,updated_at:new Date().toISOString()},{onConflict:'user_id'});if(error){console.error('Supabase save:',error);messageAuth('Erreur de sauvegarde Supabase : '+error.message,true)}}
 async function save(){
   state.role='admin';
@@ -358,14 +359,13 @@ function createEvent(){
       alert('Champs obligatoires : Client, Objet, N° commande, Lieu, Contact et Menu.'); return;
     }
     if(!items.length){alert('Ajoute au moins une ligne de commande et renseigne sa désignation.');return;}
-    if(!team.length){alert('Sélectionne au moins un serveur.');return;}
     state.events.push(e);
     localStorage.setItem(KEY,JSON.stringify(state));
     closeModal();
     current='events';
     render();
     save();
-    alert('Événement ajouté à la liste. La synchronisation Supabase est lancée.');
+    alert('Événement enregistré dans la liste. La synchronisation Supabase est lancée.');
   } catch(err) {
     console.error('createEvent error:',err);
     alert('Impossible de créer l’événement : '+(err.message||err)+'. Ouvre la console JavaScript pour les détails.');
@@ -412,17 +412,18 @@ function openEventDetail(id){
 function setPresence(eid,tid,status){let e=state.events.find(x=>x.id===eid);e.presence[tid]=status;save();openEventDetail(eid);dashboard();teamPage()}
 function presenceMember(tid){let es=visibleEvents().filter(e=>e.team.includes(tid));if(!es.length){alert('Ce membre n’est affecté à aucun de vos événements.');return}openEventDetail(es[0].id)}
 function showQR(id){
- const e=state.events.find(x=>x.id===id), url=location.href.split('#')[0]+'#feedback='+id;
- openModal(`<h2>QR — ${e.name}</h2><p style="color:var(--muted)">Le client scanne ce QR pour voir le menu exact de cet événement et laisser son avis.</p><div style="display:flex;justify-content:center;margin:18px"><img alt="QR code" width="230" height="230" src="https://api.qrserver.com/v1/create-qr-code/?size=230x230&data=${encodeURIComponent(url)}"></div><div class="notice">${url}</div><div class="modal-actions"><button class="btn secondary" onclick="closeModal()">Fermer</button><button class="btn" onclick="clientPreview('${id}')">Tester le parcours client</button></div>`)
+ const e=state.events.find(x=>x.id===id); if(!e)return; const publicData={id:e.id,object:e.object||e.name||'Événement',name:e.name||e.object||'Événement',date:e.date||'',place:e.place||'',menu:e.menu||e.menuName||''}; const payload=encodeURIComponent(JSON.stringify(publicData)); const url=location.href.split('#')[0]+'#feedback='+encodeURIComponent(id)+'&event='+payload;
+ openModal(`<h2>QR — ${e.name||e.object}</h2><p style="color:var(--muted)">Le client scanne ce QR pour voir le menu exact de cet événement et laisser son avis.</p><div style="display:flex;justify-content:center;margin:18px"><img alt="QR code" width="230" height="230" src="https://api.qrserver.com/v1/create-qr-code/?size=230x230&data=${encodeURIComponent(url)}"></div><div class="notice">${url}</div><div class="modal-actions"><button class="btn secondary" onclick="closeModal()">Fermer</button><button class="btn" onclick="clientPreview('${id}')">Tester le parcours client</button></div>`)
 }
 function clientPreview(id){closeModal();state.feedbackEvent=id;state.role='client';save();current='client';render()}
 function clientPage(){
-  const hash=location.hash.match(/feedback=([^&]+)/),id=hash?hash[1]:(state.feedbackEvent||'EVT-001'),e=state.events.find(x=>x.id===id)||state.events[0];
+  const hash=location.hash.match(/feedback=([^&]+)/),id=hash?decodeURIComponent(hash[1]):(state.feedbackEvent||'EVT-001');let e=state.events.find(x=>x.id===id)||state.events[0];const em=location.hash.match(/(?:^|&)event=([^&]+)/);if(!e&&em){try{e=JSON.parse(decodeURIComponent(em[1]))}catch(_){}}if(!e)e={id,object:'Votre événement',name:'Votre événement',date:'',place:'',menu:'Menu non renseigné',reviews:[]};
   document.getElementById('client').innerHTML=`<div class="feedback">
     <div class="hero"><div class="brand"><img class="brand-logo" src="assets/unify-easy-logo.png" alt="Unify Easy"><span>Unify <span style="color:#9db8ff">Easy</span></span></div><h1 style="margin:18px 0 5px">${e.object||e.name}</h1><p style="opacity:.72;margin:0">${fmtDate(e.date)} · ${e.place||''}</p></div>
 
     <div class="card" style="margin-top:14px">
-      <h2 class="section-title">Votre satisfaction</h2>
+      <h2 class="section-title">Menu de la prestation</h2><div class="menu-box">${e.menu||e.menuName||'Menu non renseigné pour cet événement.'}</div>
+      <h2 class="section-title" style="margin-top:18px">Votre satisfaction</h2>
       <p style="font-size:13px;color:var(--muted)">Votre avis nous aide à améliorer nos prochaines prestations.</p>
 
       <div class="field" style="margin-top:18px">
@@ -475,29 +476,23 @@ function rateQuestion(question,n){
   }
 }
 
-function submitReview(id){
+async function submitReview(id){
   const recommend=document.querySelector('input[name="recommend"]:checked')?.value||'';
-  if(!questionRatings.menu||!questionRatings.service||!questionRatings.organisation||!recommend){
-    alert('Veuillez répondre aux 4 questions avant d’envoyer votre avis.');
-    return;
-  }
-
-  const e=state.events.find(x=>x.id===id);
-  e.reviews.push({
-    menuRating:questionRatings.menu,
-    serviceRating:questionRatings.service,
-    organisationRating:questionRatings.organisation,
-    recommendation:recommend,
-    rating:Math.round((questionRatings.menu+questionRatings.service+questionRatings.organisation)/3),
-    comment:document.getElementById('clientComment').value||'Avis sans commentaire',
-    date:e.date
-  });
-  save();
-  alert('Merci pour votre avis !');
-  questionRatings={menu:0,service:0,organisation:0};
-  location.hash='';
-  current='client';
-  render();
+  if(!questionRatings.menu||!questionRatings.service||!questionRatings.organisation||!recommend){alert('Veuillez répondre aux 4 questions avant d’envoyer votre avis.');return;}
+  const comment=document.getElementById('clientComment')?.value||'Avis sans commentaire';
+  const review={menu_rating:questionRatings.menu,service_rating:questionRatings.service,organisation_rating:questionRatings.organisation,recommendation:recommend,comment};
+  const hashEvent=location.hash.match(/(?:^|&)event=([^&]+)/);let eventData=null;if(hashEvent){try{eventData=JSON.parse(decodeURIComponent(hashEvent[1]))}catch(_){}}
+  const e=state.events.find(x=>x.id===id)||eventData;
+  if(!e){alert('Impossible d’identifier cet événement. Scannez à nouveau le QR code fourni par l’organisateur.');return;}
+  if(!sb){alert('Le service d’avis n’est pas configuré. Contactez l’organisateur.');return;}
+  try{
+    const {error}=await sb.from('public_feedback').insert({event_id:id,event_name:e.object||e.name||'Événement',menu_rating:review.menu_rating,service_rating:review.service_rating,organisation_rating:review.organisation_rating,recommendation:review.recommendation,comment:review.comment});
+    if(error)throw error;
+    if(state.events.some(x=>x.id===id)){const local=state.events.find(x=>x.id===id);local.reviews=local.reviews||[];local.reviews.push({event:local.object||local.name,menuRating:review.menu_rating,serviceRating:review.service_rating,organisationRating:review.organisation_rating,recommendation:review.recommendation,comment:review.comment,date:new Date().toISOString().slice(0,10)});save();}
+    alert('Merci pour votre avis ! Votre réponse a bien été envoyée.');
+    questionRatings={menu:0,service:0,organisation:0};
+    document.getElementById('client').innerHTML='<div class="feedback"><div class="card"><h1>Merci pour votre avis !</h1><p>Votre retour a bien été transmis à l’équipe.</p></div></div>';
+  }catch(err){console.error('submitReview error:',err);alert('Votre avis n’a pas pu être envoyé : '+(err.message||err)+'. Vérifiez que le correctif SQL a été appliqué dans Supabase.');}
 }
 
 function v(id){return document.getElementById(id)?.value.trim()}
