@@ -419,7 +419,7 @@ function clientPreview(id){closeModal();state.feedbackEvent=id;current='client';
 function clientPage(){
   const hash=location.hash.match(/feedback=([^&]+)/),id=hash?decodeURIComponent(hash[1]):(state.feedbackEvent||'EVT-001');let e=state.events.find(x=>x.id===id)||null;const em=location.hash.match(/(?:^|&)event=([^&]+)/);if(em){try{e=JSON.parse(decodeURIComponent(em[1]))}catch(_){}}if(!e)e=state.events[0]||null;if(!e)e={id,object:'Votre événement',name:'Votre événement',date:'',place:'',menu:'Menu non renseigné',reviews:[]};
   document.getElementById('client').innerHTML=`<div class="feedback">
-    <div class="hero"><div class="brand"><img class="brand-logo" src="assets/unify-easy-logo.png" alt="Unify Easy"><span>Unify <span style="color:#9db8ff">Easy</span></span></div><h1 style="margin:18px 0 5px">${e.object||e.name}</h1><p style="opacity:.72;margin:0">${fmtDate(e.date)} · ${e.place||''}</p></div>
+    <div class="hero"><div class="brand"><img class="brand-logo" src="unify-easy-logo.png" alt="Unify Easy"><span>Unify <span style="color:#9db8ff">Easy</span></span></div><h1 style="margin:18px 0 5px">${e.object||e.name}</h1><p style="opacity:.72;margin:0">${fmtDate(e.date)} · ${e.place||''}</p></div>
 
     <div class="card" style="margin-top:14px">
       <h2 class="section-title">Menu de la prestation</h2><div class="menu-box">${e.menu||e.menuName||'Menu non renseigné pour cet événement.'}</div>
