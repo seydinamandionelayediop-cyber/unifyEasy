@@ -96,7 +96,18 @@ async function handleAuth(ev){ev.preventDefault();if(!sb){messageAuth('Supabase 
 async function handleSignUp(){if(!sb){messageAuth('Supabase n’est pas configuré. Complétez supabase-config.js puis rechargez la page.',true);return}const email=document.getElementById('authEmail').value.trim();const password=document.getElementById('authPassword').value;if(!email||password.length<8){messageAuth('Saisissez un e-mail et un mot de passe de 8 caractères minimum.',true);return}try{const {data,error}=await sb.auth.signUp({email,password});if(error)throw error;if(data.session){await openSession(data.user)}else{messageAuth('Compte créé. Vérifiez votre e-mail, puis connectez-vous.')}}catch(e){messageAuth(e.message||'Création du compte impossible.',true)}}
 async function openSession(user){currentUser=user;messageAuth('');try{const {data,error}=await sb.from('app_state').select('payload').eq('user_id',user.id).maybeSingle();if(error)throw error;state=normalizeState(data?.payload||emptyState());if(!data)await persistState();}catch(e){currentUser=null;await sb.auth.signOut();messageAuth('Impossible de charger les données. Vérifiez que le SQL fourni a été exécuté dans Supabase. '+(e.message||''),true);return}document.getElementById('login').style.display='none';document.getElementById('app').style.display='block';render()}
 async function persistState(){if(!sb||!currentUser)return;const {error}=await sb.from('app_state').upsert({user_id:currentUser.id,payload:state,updated_at:new Date().toISOString()},{onConflict:'user_id'});if(error){console.error('Supabase save:',error);messageAuth('Erreur de sauvegarde Supabase : '+error.message,true)}}
-function save(){state.role='admin';localStorage.setItem(KEY,JSON.stringify(state));if(saveTimer)clearTimeout(saveTimer);saveTimer=setTimeout(()=>persistState().catch(console.error),450)}
+async function save(){
+  state.role='admin';
+  try { localStorage.setItem(KEY,JSON.stringify(state)); } catch(err) { console.error(err); alert('Erreur locale : impossible de conserver les données dans ce navigateur.'); }
+  if(saveTimer) clearTimeout(saveTimer);
+  saveTimer=setTimeout(async()=>{
+    try {
+      if(!sb || !currentUser) return;
+      const {error}=await sb.from('app_state').upsert({user_id:currentUser.id,payload:state,updated_at:new Date().toISOString()},{onConflict:'user_id'});
+      if(error) { console.error('Supabase save:',error); messageAuth('Erreur Supabase : '+error.message,true); alert('Erreur Supabase lors de la sauvegarde : '+error.message); }
+    } catch(err) { console.error('Supabase save exception:',err); alert('Échec de sauvegarde Supabase : '+(err.message||err)); }
+  },200);
+}
 async function logout(){if(sb)await sb.auth.signOut();currentUser=null;state=emptyState();document.getElementById('app').style.display='none';document.getElementById('login').style.display='flex';messageAuth('Vous êtes déconnecté.')}
 async function boot(){if(location.hash.startsWith('#feedback=')){current='client';state=normalizeState(emptyState());document.getElementById('login').style.display='none';document.getElementById('app').style.display='block';render();return}if(!sb){messageAuth('Configuration requise : renseignez supabase-config.js et exécutez supabase/schema.sql.',true);return}const {data:{session}}=await sb.auth.getSession();if(session?.user)await openSession(session.user)}
 function roleName(){return state.role==='admin'?'Administrateur':state.role==='responsable'?'Responsable':'Client'}
@@ -323,56 +334,42 @@ function addOrderLine(){
   box.appendChild(row);
 }
 function createEvent(){
-  const team=[...document.querySelectorAll('.servercheck:checked')].map(x=>x.value);
-  const items=[...document.querySelectorAll('.order-line')].map(row=>({
-    description:row.querySelector('.order-desc')?.value.trim()||'',
-    quantity:Number(row.querySelector('.order-qty')?.value||1),
-    amount:Number(row.querySelector('.order-price')?.value||0)
-  })).filter(x=>x.description);
-
-  const billing=document.querySelector('input[name="billing"]:checked')?.value||'to_invoice';
-  const e={
-    id:'EVT-'+String(Date.now()).slice(-5),
-    client:v('e_client'),
-    object:v('e_object'),
-    order:v('e_order'),
-    orderItems:items,
-    place:v('e_place'),
-    contact:v('e_contact'),
-    observation:v('e_observation'),
-    menu:v('e_menu'),
-    menuName:v('e_menu'),
-    menuNo:v('e_menuNo'),
-    serverIds:team,
-    server:team.map(id=>state.team.find(t=>t.id===id)?.name).filter(Boolean).join(', '),
-    name:v('e_object'),
-    date:v('e_date'),
-    time:'',
-    guests:0,
-    responsible:state.responsible[0]?.name||'',
-    team,
-    presence:Object.fromEntries(team.map(id=>[id,'pending'])),
-    reviews:[],
-    billingStatus:billing,
-    amount:Number(v('e_amount')||0)
-  };
-
-  if(!e.client||!e.object||!e.order||!e.place||!e.contact||!e.menu){
-    alert('Veuillez remplir Client, Objet, Commande, Lieu, Contact et Menu.');
-    return;
+  try {
+    const team=[...document.querySelectorAll('.servercheck:checked')].map(x=>x.value);
+    const items=[...document.querySelectorAll('.order-line')].map(row=>({
+      description:row.querySelector('.order-desc')?.value.trim()||'',
+      quantity:Number(row.querySelector('.order-qty')?.value||1),
+      amount:Number(row.querySelector('.order-price')?.value||0)
+    })).filter(x=>x.description);
+    const billing=document.querySelector('input[name="billing"]:checked')?.value||'to_invoice';
+    const e={
+      id:'EVT-'+String(Date.now()).slice(-5),
+      client:v('e_client'), object:v('e_object'), order:v('e_order'), orderItems:items,
+      place:v('e_place'), contact:v('e_contact'), observation:v('e_observation'),
+      menu:v('e_menu'), menuName:v('e_menu'), menuNo:v('e_menuNo'),
+      serverIds:team,
+      server:team.map(id=>state.team.find(t=>t.id===id)?.name).filter(Boolean).join(', '),
+      name:v('e_object'), date:v('e_date'), time:'', guests:0,
+      responsible:state.responsible[0]?.name||'', team,
+      presence:Object.fromEntries(team.map(id=>[id,'pending'])), reviews:[],
+      billingStatus:billing, amount:Number(v('e_amount')||0)
+    };
+    if(!e.client||!e.object||!e.order||!e.place||!e.contact||!e.menu){
+      alert('Champs obligatoires : Client, Objet, N° commande, Lieu, Contact et Menu.'); return;
+    }
+    if(!items.length){alert('Ajoute au moins une ligne de commande et renseigne sa désignation.');return;}
+    if(!team.length){alert('Sélectionne au moins un serveur.');return;}
+    state.events.push(e);
+    localStorage.setItem(KEY,JSON.stringify(state));
+    closeModal();
+    current='events';
+    render();
+    save();
+    alert('Événement ajouté à la liste. La synchronisation Supabase est lancée.');
+  } catch(err) {
+    console.error('createEvent error:',err);
+    alert('Impossible de créer l’événement : '+(err.message||err)+'. Ouvre la console JavaScript pour les détails.');
   }
-  if(!items.length){
-    alert('Ajoutez au moins une ligne dans la commande.');
-    return;
-  }
-  if(!team.length){
-    alert('Sélectionnez au moins un serveur.');
-    return;
-  }
-  state.events.push(e);
-  save();
-  closeModal();
-  go('events');
 }
 
 function openTeam(){openModal(`<h2>Créer un membre</h2><div class="form"><div class="field"><label>Nom</label><input id="t_name"></div><div class="field"><label>Fonction</label><input id="t_job" placeholder="Service, cuisine, accueil..."></div><div class="field"><label>Téléphone</label><input id="t_phone"></div></div><div class="modal-actions"><button class="btn secondary" onclick="closeModal()">Annuler</button><button class="btn" onclick="createTeam()">Créer</button></div>`)}
